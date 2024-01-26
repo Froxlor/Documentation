@@ -82,6 +82,10 @@ function navbar21() {
                 link: '/general/migration-guide/',
                 items: [
                     {
+                        text: 'Server Migration',
+                        link: '/general/migration-guide/new-server'
+                    },
+                    {
                         text: '2.0 to 2.1',
                         link: '/general/migration-guide/2.1'
                     },
