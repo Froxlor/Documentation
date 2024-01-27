@@ -8,7 +8,9 @@
 ### Requirements
 We assume your new server is set up and running to a point at which we could install Froxlor. It is not necessary that you use the same packages, or the same versions even, than you did on the old server.
 
-**This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and to read log files. It would also help if you have a vague understanding of shell scripting and SQL.**
+::: warning
+This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and to read log files. It would also help if you have a vague understanding of shell scripting and SQL.
+:::
 
 In the process, you will have to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.
 
@@ -55,6 +57,8 @@ And run this query for each user that needs a password update:
 ````sql
 ALTER USER 'username' IDENTIFIED BY 'password';
 ````
+
+### Preparation
 
 Before you start, you should stop services that could create user data as this would not be part of our backup. Think of your web server, FTP daemon and mail server. For a basic installation using Apache, ProFTPd, Postfix, and Dovecot, this would be your line (you might want to adjust this for the services you are actually using):
 ````shell
@@ -108,15 +112,15 @@ IFS="
 export MYSQL_PWD=MySecretRootPasswordHere
 
 for DBFile in `ls -1 *.sql`; do
-    if [ "$DBFile" -eq "mysql.sql" ];
+    if [ "$DBFile" == "mysql.sql" ]; then
         continue;
-    done;
+    fi;
 
     DB=`echo $DBFile | tr -d '.sql'`
 
     echo "Importing "$DB" from "$DBFile"..."
 
-    echo "CREATE DATABASE '$DB';" | mysql --user=root
+    echo "CREATE DATABASE $DB;" | mysql --user=root
     mysql --user=root --default-character-set=utf8mb4 --database=$DB < $DBFile
 done;
 
