@@ -10,7 +10,7 @@ We assume your new server is set up (or will be set up) the same way the old ser
 
 In preparation, you should make sure everything on your old host is up-to-date, i.e. your webserver, PHP versions, Froxlor and so on.
 
-Also, it would be a good idea to have a way to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here.
+Also, it would be a good idea to have a way to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.
 
 Before you start, you should stop services that could create user data as this would not be part of our backup. Think of your web server, database, FTP daemon and mail server. For a basic installation using Apache, MySQL, ProFTPd, Postfix, and Dovecot, this would be your line (you might want to adjust this for the services you are actually using):
 ````shell
@@ -40,7 +40,7 @@ Assuming Froxlor is installed in its default location (`/var/www/html/froxlor/`)
 Copy them into `/var/www/html/froxlor/lib/` on your new server.
 
 #### Databases
-Next up is the database. Here we go the easy, straight-forward route, however, this is the point where it is of **upmost importance** that your old and your new server are running the same software, in the same version, with the same configuration!
+Next up is the database. Here we go the easy, straight-forward route, however, this is the point where it is of **upmost importance** that your old and your new server are running the same software, which means the same flavour of your DBMS (i.e. MariaDB vs. MySQL), with the same configuration! The version on your old server may be older, upon first startup on the new server all of your data should be checked and updated as needed. However, if you were running the exact same version, you also have a little sanity check that everything worked before migration (fewer possible points of failure).
 
 First of all, stop the database service on **both** servers (depending on your configuration, this may take a while, please be patient):
 ````shell
