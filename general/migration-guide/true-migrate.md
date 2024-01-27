@@ -27,13 +27,13 @@ You should be aware of this. If you change from **MySQL 8 to MariaDB**, prepare 
 Currently (as of writing: 8.0.36) MySQL warns in its error log file about the usage of `mysql_native_password` if any user still uses this hashing method. Since Oracle plans on removing support for this method in a future version, you should update to the new hashing algorithm to avoid problems in the future.
 
 To do that, you would log in to your MySQL server
-````shell
+```shell
 mysql --user=root --password --database=mysql
-````
+```
 and query for users that use the old plugin:
-````sql
+```sql
 SELECT User FROM user WHERE plugin = 'mysql_native_password' GROUP BY User;
-````
+```
 
 On a system that only runs Froxlor and websites for the customers, there not all that many users we care about. We can safely ignore:
 * root (which is re-created on the new server anyway)
@@ -48,28 +48,28 @@ Where we would have to change passwords would be if **froxlor** or any customer 
 You should create yourself a map in a text editor where you store all the users that you would have to change the passwords for.
 
 Login to MySQL with your root credentials:
-````shell
+```shell
 mysql --user=root --password
-````
+```
 
 And run this query for each user that needs a password update:
 
-````sql
+```sql
 ALTER USER 'username' IDENTIFIED BY 'password';
-````
+```
 
 ### Preparation
 
 Before you start, you should stop services that could create user data as this would not be part of our backup. Think of your web server, FTP daemon and mail server. For a basic installation using Apache, ProFTPd, Postfix, and Dovecot, this would be your line (you might want to adjust this for the services you are actually using):
-````shell
+```shell
 systemctl stop apache2 proftpd postfix dovecot
-````
+```
 
 This will (obviously) cause most of your server to go down, so prepare your customers beforehand. Please note that we did not shut down MySQL/MariaDB because we need to dump the databases.
 
 ### Dump all your databases
 Dumping all your databases is fairly straight-forward. You can use a script for that. Put it in a safe location, such as `~/froxlor-migration/` and call it `dump-em-all.sh`. Also, give it execution rights (`chmod +x ~/froxlor-migration/dump-em-all.sh`). It should have the following content (adjust MYSQL_PWD to your root password):
-````bash
+```bash
 #!/bin/bash
 
 IFS="
@@ -89,7 +89,7 @@ done;
 rm $DBLIST
 echo "All done!"
 
-````
+```
 
 ### Transfer files
 Now it's time to transfer your data to the new server. That would be your SQL dumps (if you followed the example, it's in `~/froxlor-migration/`), your Froxlor installation (by default in `/var/www/html/froxlor`) and your customers' data (by default in `/var/customers/`).
@@ -103,7 +103,7 @@ Consult the [installation guide](../installation/) to see the current system req
 
 ### Prepare and import databases
 On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, call it `create-db.sh` and give it execution permissions. Its contents should be:
-````bash
+```bash
 #!/bin/bash
 
 IFS="
@@ -126,19 +126,19 @@ done;
 
 echo "All done!"
 
-````
+```
 
 After this script is done, the databases would be re-imported. All that is left now is the users. And this is the fun part, which is not to say, the part where you could use some SQL knowledge.
 
 Open mysql.sql in your favorite editor. Delete everything from the beginning until
-````sql
+```sql
 INSERT INTO `db` VALUES
-````
+```
 (do not delete this line)
 After that statement, delete everything from the comment until you find
-````sql
+```sql
 INSERT INTO `user` VALUES
-````
+```
 (again, do not delete this line)
 And once again, after that statement, there should be a comment and from there until the end, you are deleting everything.
 
@@ -156,29 +156,29 @@ and delete them.
 Once the editor is open, you would do a little search and replace now for your old IP addresses and replace them with your new IP addresses.
 
 When done, save the file and import it to your mysql:
-````shell
+```shell
 mysql --user=root --database=mysql < mysql.sql
-````
+```
 
 ~~For good measurement~~ Because we did something a sane service would not really appreciate, you should restart MySQL now which would also make it re-load all the user data:
-````shell
+```shell
 service mysql restart
-````
+```
 
 If MySQL seems happy enough, then congratulations, you did the hardest part. The rest should be easy.
 
 #### Have Froxlor create its environment
 Earlier, we search-replace'd IP adresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But Froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
-````shell
+```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
-````
+```
 
 Now we have to configure Froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use Froxlor's CLI tool as the web interface would likely not yet work.
-````shell
+```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:config-services -c
-````
+```
 
 Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
 

@@ -16,15 +16,15 @@ In order to use git you have to install git on your target-system. See the offic
 
 Connect to a shell on your server and change the directory to `/var/www/html/`.
 
-````shell
+```shell
 cd /var/www/html/
-````
+```
 
 Now you can 'clone' the froxlor repository using the following command. It will store the files into the given target-directory froxlor (/var/www/html/froxlor/).
 
-````shell
+```shell
 git clone https://github.com/Froxlor/Froxlor.git froxlor
-````
+```
 
 ## 3. Download dependencies
 
