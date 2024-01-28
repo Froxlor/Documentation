@@ -1,11 +1,11 @@
 # Migration Guide
 
-## Migrate Froxlor To A New Server
+## Migrate froxlor to a new server
 
-There are two ways to approach this. There is the easy and straight-forward way. This is recommended if your old server runs fine and you want to keep everything as it is. It requires having your old and your new host running on the same versions of software (operating system, databases, etc.).
+There are two ways to migrate your server. The first is a simple and straightforward method, recommended if your old server is running smoothly and you want to maintain the status quo. This method requires that your old and new hosts run the same versions of software, including the operating system and databases.
 
 [Read guide](clone.html)
 
-The second approach is more involved but allows greater flexibility, e.g. if you plan to use another database flavor (MySQL vs. MariaDB). You should only go this route **if you know what you are doing!**
+The second approach is more involved but offers greater flexibility, such as the ability to use a different database flavor (MySQL vs. MariaDB). You should only go this way **if you know what you are doing!**.
 
 [Read guide](true-migrate.html)

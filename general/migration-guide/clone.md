@@ -3,12 +3,12 @@
 </script>
 # Migration Guide
 
-## Cloning Froxlor to a new server
+## Cloning froxlor to a new server
 
 ### Requirements
 We assume your new server is set up (or will be set up) the same way the old server is. This means you are using the same operating system, in the same version, the same flavor of MySQL or MariaDB.
 
-In preparation, you should make sure everything on your old host is up-to-date, i.e. your webserver, PHP versions, Froxlor and so on.
+In preparation, you should make sure everything on your old host is up-to-date, i.e. your webserver, PHP versions, froxlor and so on.
 
 Also, it would be a good idea to have a way to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.
 
@@ -19,12 +19,12 @@ systemctl stop apache2 mysql proftpd postfix dovecot
 
 This will (obviously) cause most of your server to go down, so prepare your customers beforehand.
 
-### Pretend to install Froxlor
-Make sure your new server has installed all the software that is required to run Froxlor.
+### Pretend to install froxlor
+Make sure your new server has installed all the software that is required to run froxlor.
 
 If you were using non-default packages, such as custom PHP versions or another database server, now would be the time to add the necessary repositories and install the packages accordingly.
 
-Consult the [installation guide](../installation/) to see the current system requirements and how to install Froxlor. Follow your prefered installation guide up to the point where you **would** create the privileged database user.
+Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your prefered installation guide up to the point where you **would** create the privileged database user.
 
 ### Move over files from the old host
 Generally, we need data from three sources now:
@@ -33,7 +33,7 @@ Generally, we need data from three sources now:
 * Customer documents
 
 #### Froxlor
-Assuming Froxlor is installed in its default location (`/var/www/html/froxlor/`), we need at least one file:
+Assuming froxlor is installed in its default location (`/var/www/html/froxlor/`), we need at least one file:
 * `/var/www/html/froxlor/lib/userdata.inc.php`
 * `/var/www/html/froxlor/lib/config.inc.php` (if it exists)
 
@@ -67,14 +67,14 @@ After the extraction, we can start the database service again (this may also tak
 service mysql start
 ```
 
-#### Have Froxlor create its environment
+#### Have froxlor create its environment
 What we have created so far is the bare minimum for your web server to work. However, your new server likely also comes with new IP addresses. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
 ```
 
-Now we have to configure Froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use Froxlor's CLI tool as the web interface would likely not yet work.
+Now we have to configure froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not yet work.
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:config-services -c
@@ -100,6 +100,6 @@ systemctl start apache2 proftpd postfix dovecot
 ```
 
 ### Finishing touches
-Almost done! Froxlor and all your customer's projects should work now. As a final step, you want to login into Froxlor and head to System, Settings, System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with Froxlor's automatic configuration.
+Almost done! Froxlor and all your customer's projects should work now. As a final step, you want to login into froxlor and head to System, Settings, System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with froxlor's automatic configuration.
 
 All that is left now is to change DNS settings and shut down the old server.
