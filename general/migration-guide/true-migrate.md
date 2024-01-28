@@ -1,7 +1,7 @@
 <script setup>
 
 </script>
-# Migration guide
+# Migration Guide
 
 ## Migrate froxlor to a new server
 
