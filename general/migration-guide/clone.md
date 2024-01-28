@@ -1,7 +1,7 @@
 <script setup>
 
 </script>
-# Migration Guide
+# Migration guide
 
 ## Cloning froxlor to a new server
 
@@ -83,7 +83,7 @@ bin/froxlor-cli froxlor:config-services -c
 
 Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
 
-#### Customer's data
+#### Customers' data
 Finally, we have to carry over any customer data. If you didn't change it, they are located in `/var/customers/`, so this is the folder we want to back up and transfer to the new server.
 ```shell
 cd /var/

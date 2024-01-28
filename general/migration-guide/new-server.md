@@ -1,4 +1,4 @@
-# Migration Guide
+# Migration guide
 
 ## Migrate froxlor to a new server
 

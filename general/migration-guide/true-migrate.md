@@ -1,7 +1,7 @@
 <script setup>
 
 </script>
-# Migration Guide
+# Migration guide
 
 ## Migrate froxlor to a new server
 
@@ -59,7 +59,6 @@ ALTER USER 'username' IDENTIFIED BY 'password';
 ```
 
 ### Preparation
-
 Before you start, you should stop services that could create user data as this would not be part of our backup. Think of your web server, FTP daemon and mail server. For a basic installation using Apache, ProFTPd, Postfix, and Dovecot, this would be your line (you might want to adjust this for the services you are actually using):
 ```shell
 systemctl stop apache2 proftpd postfix dovecot

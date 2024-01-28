@@ -82,7 +82,7 @@ function navbar21() {
                 link: '/general/migration-guide/',
                 items: [
                     {
-                        text: 'Server Migration',
+                        text: 'Server migration',
                         link: '/general/migration-guide/new-server'
                     },
                     {
