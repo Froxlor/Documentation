@@ -70,14 +70,15 @@ service mysql start
 #### Have Froxlor create its environment
 What we have created so far is the bare minimum for your web server to work. However, your new server likely also comes with new IP addresses. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
-cd /var/www/html/froxlor/bin
-./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
+cd /var/www/html/froxlor
+bin/froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
+bin/froxlor-cli froxlor:switch-server-ip --switch=2001:db8:beef::69,2001:db8:cafe::420
 ```
 
 Now we have to configure Froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use Froxlor's CLI tool as the web interface would likely not yet work.
 ```shell
-cd /var/www/html/froxlor/bin
-./froxlor-cli froxlor:config-services -c
+cd /var/www/html/froxlor
+bin/froxlor-cli froxlor:config-services -c
 ```
 
 Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
@@ -85,8 +86,8 @@ Froxlor CLI will now ask you about your distro and the services you want to use 
 #### Customer's data
 Finally, we have to carry over any customer data. If you didn't change it, they are located in `/var/customers/`, so this is the folder we want to back up and transfer to the new server.
 ```shell
-cd /var/customers/
-tar cfvz ~/customerfiles.tar.gz ./
+cd /var/
+tar cfvz ~/customerfiles.tar.gz ./customers/
 ```
 
 Again, the resulting archive is in your home folder, and you want to transfer it to the new server.
@@ -94,7 +95,8 @@ Again, the resulting archive is in your home folder, and you want to transfer it
 On the new server, and assuming customerfiles.tar.gz is in your home folder, you want to run the following commands (pease adjust the systemctl calls with the services you actually use!):
 ```shell
 systemctl stop apache2 proftpd postfix dovecot
-cd /var/customers/
+cd /var/
+mv ./customers ./customers.backup
 tar xfvz ~/customerfiles.tar.gz .
 systemctl start apache2 proftpd postfix dovecot
 ```

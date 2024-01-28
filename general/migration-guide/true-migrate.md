@@ -170,14 +170,15 @@ If MySQL seems happy enough, then congratulations, you did the hardest part. The
 #### Have Froxlor create its environment
 Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But Froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
-cd /var/www/html/froxlor/bin
-./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
+cd /var/www/html/froxlor
+bin/froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
+bin/froxlor-cli froxlor:switch-server-ip --switch=2001:db8:beef::69,2001:db8:cafe::420
 ```
 
 Now we have to configure Froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use Froxlor's CLI tool as the web interface would likely not yet work.
 ```shell
-cd /var/www/html/froxlor/bin
-./froxlor-cli froxlor:config-services -c
+cd /var/www/html/froxlor
+bin/froxlor-cli froxlor:config-services -c
 ```
 
 Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
