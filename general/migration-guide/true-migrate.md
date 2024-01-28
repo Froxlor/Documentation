@@ -9,7 +9,7 @@
 We assume your new server is set up and running to a point at which we could install froxlor. It is not necessary that you use the same packages, or the same versions even, than you did on the old server.
 
 ::: warning
-This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and to read log files. It would also help if you have a vague understanding of shell scripting and SQL.
+This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and read log files. It would also help if you have a vague understanding of shell scripting and SQL.
 :::
 
 In the process, you will have to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.

@@ -6,6 +6,6 @@ There are two ways to migrate your server. The first is a simple and straightfor
 
 [Read guide](clone.html)
 
-The second approach is more involved but offers greater flexibility, such as the ability to use a different database flavor (MySQL vs. MariaDB). You should only go this way **if you know what you are doing!**.
+The second approach is more involved but offers greater flexibility, such as the ability to use a different database flavor (MySQL vs. MariaDB). You should only go this way **if you know what you are doing!**
 
 [Read guide](true-migrate.html)
