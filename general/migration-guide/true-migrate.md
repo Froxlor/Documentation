@@ -3,10 +3,10 @@
 </script>
 # Migration Guide
 
-## Migrate Froxlor to a new server
+## Migrate froxlor to a new server
 
 ### Requirements
-We assume your new server is set up and running to a point at which we could install Froxlor. It is not necessary that you use the same packages, or the same versions even, than you did on the old server.
+We assume your new server is set up and running to a point at which we could install froxlor. It is not necessary that you use the same packages, or the same versions even, than you did on the old server.
 
 ::: warning
 This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and to read log files. It would also help if you have a vague understanding of shell scripting and SQL.
@@ -17,7 +17,7 @@ In the process, you will have to transfer files between your servers. This could
 ### Considerations beforehand
 This method gives you the flexibility to switch your services and versions around. For example, you could use MySQL on your old server and MariaDB on your new server. However, for everything to go as smoothly as possible, you should be aware of a few things.
 
-See, when you add databases in Froxlor, Froxlor itself actually just keeps an index of which databases it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because Froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
+See, when you add databases in froxlor, froxlor itself actually just keeps an index of which databases it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
 
 For most users, the main difference between MariaDB and MySQL will be that MySQL 8 deprecates the old `mysql_native_password` hashing algorithm for storing passwords, whereas MariaDB does not support MySQL's new `caching_sha2_password` (and sticks with the former instead).
 
@@ -35,7 +35,7 @@ and query for users that use the old plugin:
 SELECT User FROM user WHERE plugin = 'mysql_native_password' GROUP BY User;
 ```
 
-On a system that only runs Froxlor and websites for the customers, there are not all that many users we care about. We can safely ignore:
+On a system that only runs froxlor and websites for the customers, there are not all that many users we care about. We can safely ignore:
 * root (which is re-created on the new server anyway)
 * froxroot (which is re-created on the new server anyway)
 * mysql.infoschema (we won't carry that over)
@@ -92,14 +92,14 @@ echo "All done!"
 ```
 
 ### Transfer files
-Now it's time to transfer your data to the new server. That would be your SQL dumps (if you followed the example, it's in `~/froxlor-migration/`), your Froxlor installation (by default in `/var/www/html/froxlor`) and your customers' data (by default in `/var/customers/`).
+Now it's time to transfer your data to the new server. That would be your SQL dumps (if you followed the example, it's in `~/froxlor-migration/`), your froxlor installation (by default in `/var/www/html/froxlor`) and your customers' data (by default in `/var/customers/`).
 
-### Pretend to install Froxlor
-Make sure your new server has installed all the software that is required to run Froxlor.
+### Pretend to install froxlor
+Make sure your new server has installed all the software that is required to run froxlor.
 
 If you were using non-default packages, such as custom PHP versions or another database server, now it would be the time to add the necessary repositories and install the packages accordingly.
 
-Consult the [installation guide](../installation/) to see the current system requirements and how to install Froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
+Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
 
 ### Prepare and import databases
 On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, call it `create-db.sh` and give it execution permissions. Its contents should be:
@@ -167,14 +167,14 @@ service mysql restart
 
 If MySQL seems happy enough, then congratulations, you did the hardest part. The rest should be easy.
 
-#### Have Froxlor create its environment
-Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But Froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
+#### Have froxlor create its environment
+Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
 ```
 
-Now we have to configure Froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use Froxlor's CLI tool as the web interface would likely not yet work.
+Now we have to configure froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not yet work.
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:config-services -c
