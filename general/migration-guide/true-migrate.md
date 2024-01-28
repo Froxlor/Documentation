@@ -15,9 +15,9 @@ This guide is for advanced users only. Only use it if you know what you are doin
 In the process, you will have to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.
 
 ### Considerations beforehand
-This method gives you the flexibility to switch your services and versions around. For example, you could use MySQL on your old server and MariaDB on your new server. However, for everything to go as smooth as possible, you should be aware of a few things.
+This method gives you the flexibility to switch your services and versions around. For example, you could use MySQL on your old server and MariaDB on your new server. However, for everything to go as smoothly as possible, you should be aware of a few things.
 
-See, when you add databases in Froxlor, Froxlor itself actually just keeps an index of which databases it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because Froxlor does not actually know the database user's password, it will not be able to re-create them on a new host.
+See, when you add databases in Froxlor, Froxlor itself actually just keeps an index of which databases it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because Froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
 
 For most users, the main difference between MariaDB and MySQL will be that MySQL 8 deprecates the old `mysql_native_password` hashing algorithm for storing passwords, whereas MariaDB does not support MySQL's new `caching_sha2_password` (and sticks with the former instead).
 
@@ -35,7 +35,7 @@ and query for users that use the old plugin:
 SELECT User FROM user WHERE plugin = 'mysql_native_password' GROUP BY User;
 ```
 
-On a system that only runs Froxlor and websites for the customers, there not all that many users we care about. We can safely ignore:
+On a system that only runs Froxlor and websites for the customers, there are not all that many users we care about. We can safely ignore:
 * root (which is re-created on the new server anyway)
 * froxroot (which is re-created on the new server anyway)
 * mysql.infoschema (we won't carry that over)
@@ -99,7 +99,7 @@ Make sure your new server has installed all the software that is required to run
 
 If you were using non-default packages, such as custom PHP versions or another database server, now it would be the time to add the necessary repositories and install the packages accordingly.
 
-Consult the [installation guide](../installation/) to see the current system requirements and how to install Froxlor. Follow your prefered installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
+Consult the [installation guide](../installation/) to see the current system requirements and how to install Froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
 
 ### Prepare and import databases
 On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, call it `create-db.sh` and give it execution permissions. Its contents should be:
@@ -144,7 +144,7 @@ And once again, after that statement, there should be a comment and from there u
 
 Now you want to do a little search and replace magic for better readability. You want to find `),(` and replace it with `),\n(` (or however you would tell your editor that you want a line break after the comma). If you for example use `mcedit`, you could achieve this by searching for `\),\(` and replacing with `),\n(` in `Regular Expression` mode.
 
-You should see a bunch of lines now. These represent your databases permissions and your database users. Navigate to lines that include either of those:
+You should see a bunch of lines now. These represent your databases' permissions and your database users. Navigate to lines that include either of those:
 * `performance_schema`
 * `mysql.sys`
 * `mysql.infoschema`
@@ -168,7 +168,7 @@ service mysql restart
 If MySQL seems happy enough, then congratulations, you did the hardest part. The rest should be easy.
 
 #### Have Froxlor create its environment
-Earlier, we search-replace'd IP adresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But Froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
+Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But Froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10

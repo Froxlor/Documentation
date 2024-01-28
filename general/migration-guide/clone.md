@@ -22,7 +22,7 @@ This will (obviously) cause most of your server to go down, so prepare your cust
 ### Pretend to install Froxlor
 Make sure your new server has installed all the software that is required to run Froxlor.
 
-If you were using non-default packages, such as custom PHP versions or another database server, now it would be the time to add the necessary repositories and install the packages accordingly.
+If you were using non-default packages, such as custom PHP versions or another database server, now would be the time to add the necessary repositories and install the packages accordingly.
 
 Consult the [installation guide](../installation/) to see the current system requirements and how to install Froxlor. Follow your prefered installation guide up to the point where you **would** create the privileged database user.
 
@@ -47,7 +47,7 @@ First of all, stop the database service on **both** servers (depending on your c
 service mysql stop
 ```
 
-On the old server, we now go get the database files The `tar` command may take a while too.
+On the old server, we now go get the database files. The `tar` command may take a while too.
 ```shell
 cd /var/lib/
 tar cfvz ~/mysqlfiles.tar.gz ./mysql/
@@ -55,7 +55,7 @@ tar cfvz ~/mysqlfiles.tar.gz ./mysql/
 
 The resulting archive will be stored in your home folder. This archive needs to be transferred to the new server. Let's assume you put `mysqlfiles.tar.gz` in your home folder there as well.
 
-As a reminder: It's important that you database service is not running at the moment! Because we are now going to move over the database files.
+As a reminder: It's important that your database service is not running at the moment! Because we are now going to move over the database files.
 ```shell
 cd /var/lib/
 mv ./mysql ./mysql.backup
@@ -68,7 +68,7 @@ service mysql start
 ```
 
 #### Have Froxlor create its environment
-What we have created so far is the bare minimum for your webserver to work. However, your new server likely also comes with new IP addresses. Froxlor comes with a CLI tool to change the old ones with the new ones:
+What we have created so far is the bare minimum for your web server to work. However, your new server likely also comes with new IP addresses. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor/bin
 ./froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
