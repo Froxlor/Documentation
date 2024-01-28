@@ -17,14 +17,14 @@ In the process, you will have to transfer files between your servers. This could
 ### Considerations beforehand
 This method gives you the flexibility to switch your services and versions around. For example, you could use MySQL on your old server and MariaDB on your new server. However, for everything to go as smoothly as possible, you should be aware of a few things.
 
-See, when you add databases in froxlor, froxlor itself actually just keeps an index of which databases it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
+See, when your customers create new databases, froxlor actually just keeps an index of which ones it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
 
 For most users, the main difference between MariaDB and MySQL will be that MySQL 8 deprecates the old `mysql_native_password` hashing algorithm for storing passwords, whereas MariaDB does not support MySQL's new `caching_sha2_password` (and sticks with the former instead).
 
 You should be aware of this. If you change from **MySQL 8 to MariaDB**, prepare to change passwords. If you change from **MariaDB to MySQL**, prepare to change passwords. If you stick with MySQL, check if you might have to change passwords. If you stick with MariaDB, no password changes are to be expected.
 
 ### (MySQL only) Step 0: Consult `/var/log/mysql/error.log`
-Currently (as of writing: 8.0.36) MySQL warns in its error log file about the usage of `mysql_native_password` if any user still uses this hashing method. Since Oracle plans on removing support for this method in a future version, you should update to the new hashing algorithm to avoid problems in the future.
+Currently (as of writing: 8.0.36) MySQL warns in its error log file about the usage of `mysql_native_password` if any user still uses this hashing method. Since Oracle plans to remove support for this method in a future version, you should update to the new hashing algorithm to avoid problems down the road.
 
 To do that, you would log in to your MySQL server
 ```shell
@@ -68,7 +68,7 @@ systemctl stop apache2 proftpd postfix dovecot
 This will (obviously) cause most of your server to go down, so prepare your customers beforehand. Please note that we did not shut down MySQL/MariaDB because we need to dump the databases.
 
 ### Dump all your databases
-Dumping all your databases is fairly straight-forward. You can use a script for that. Put it in a safe location, such as `~/froxlor-migration/` and call it `dump-em-all.sh`. Also, give it execution rights (`chmod +x ~/froxlor-migration/dump-em-all.sh`). It should have the following content (adjust MYSQL_PWD to your root password):
+Dumping all your databases is fairly straightforward. You can use a script for that. Put it in a safe location, such as `~/froxlor-migration/` and name it `dump-em-all.sh`. Also, give it execution rights (`chmod +x ~/froxlor-migration/dump-em-all.sh`). It should have the following content (adjust MYSQL_PWD to your root password):
 ```bash
 #!/bin/bash
 
@@ -97,12 +97,12 @@ Now it's time to transfer your data to the new server. That would be your SQL du
 ### Pretend to install froxlor
 Make sure your new server has installed all the software that is required to run froxlor.
 
-If you were using non-default packages, such as custom PHP versions or another database server, now it would be the time to add the necessary repositories and install the packages accordingly.
+If you were using non-default packages, such as custom PHP versions or another database server, now would be the time to add the necessary repositories and install the packages accordingly.
 
 Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
 
 ### Prepare and import databases
-On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, call it `create-db.sh` and give it execution permissions. Its contents should be:
+On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, name it `create-db.sh` and give it execution permissions. Its contents should be (again change MYSQL_PWD's value to your MySQL root password):
 ```bash
 #!/bin/bash
 
@@ -160,7 +160,7 @@ When done, save the file and import it to your mysql:
 mysql --user=root --database=mysql < mysql.sql
 ```
 
-~~For good measurement~~ Because we did something a sane service would not really appreciate, you should restart MySQL now which would also make it re-load all the user data:
+~~For good measure~~ Because we did something a sane service would not really appreciate, you should restart MySQL now which would also make it reload all the user data:
 ```shell
 service mysql restart
 ```
@@ -168,14 +168,14 @@ service mysql restart
 If MySQL seems happy enough, then congratulations, you did the hardest part. The rest should be easy.
 
 #### Have froxlor create its environment
-Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But froxlor also has a list of IP addresses that most likely need changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
+Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But froxlor also has a list of IP addresses that most likely needs changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor
 bin/froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
 bin/froxlor-cli froxlor:switch-server-ip --switch=2001:db8:beef::69,2001:db8:cafe::420
 ```
 
-Now we have to configure froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not yet work.
+Now we have to have froxlor configure all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not work yet.
 ```shell
 cd /var/www/html/froxlor
 bin/froxlor-cli froxlor:config-services -c
@@ -184,6 +184,6 @@ bin/froxlor-cli froxlor:config-services -c
 Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
 
 ### Finishing touches
-Almost done! Froxlor and all your customer's projects should work now. As a final step, you want to login into Froxlor and head to System, Settings, System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with Froxlor's automatic configuration.
+Almost done! Froxlor and all your customers' projects should work now. As a final step, you want to login into froxlor and head to System > Settings > System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with froxlor's automatic configuration.
 
 All that is left now is to change DNS settings and shut down the old server.

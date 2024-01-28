@@ -24,7 +24,7 @@ Make sure your new server has installed all the software that is required to run
 
 If you were using non-default packages, such as custom PHP versions or another database server, now would be the time to add the necessary repositories and install the packages accordingly.
 
-Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your prefered installation guide up to the point where you **would** create the privileged database user.
+Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your preferred installation guide up to the point where you **would** create the privileged database user.
 
 ### Move over files from the old host
 Generally, we need data from three sources now:
@@ -40,7 +40,7 @@ Assuming froxlor is installed in its default location (`/var/www/html/froxlor/`)
 Copy them into `/var/www/html/froxlor/lib/` on your new server.
 
 #### Databases
-Next up is the database. Here we go the easy, straight-forward route, however, this is the point where it is of **upmost importance** that your old and your new server are running the same software, which means the same flavour of your DBMS (i.e. MariaDB vs. MySQL), with the same configuration! The version on your old server may be older, upon first startup on the new server all of your data should be checked and updated as needed. However, if you were running the exact same version, you also have a little sanity check that everything worked before migration (fewer possible points of failure).
+Next up is the database. Here we go the easy, straightforward route, however, this is the point where it is of **utmost importance** that your old and your new server are running the same software, which means the same flavour of your DBMS (i.e. MariaDB vs. MySQL), with the same configuration! The version on your old server may be older, upon first startup on the new server all of your data should be checked and updated as needed. However, if you were running the exact same version, you also have a little sanity check that everything worked before migration (fewer possible points of failure).
 
 First of all, stop the database service on **both** servers (depending on your configuration, this may take a while, please be patient):
 ```shell
@@ -75,7 +75,7 @@ bin/froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
 bin/froxlor-cli froxlor:switch-server-ip --switch=2001:db8:beef::69,2001:db8:cafe::420
 ```
 
-Now we have to configure froxlor all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not yet work.
+Now we have to have froxlor configure all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not work yet.
 ```shell
 cd /var/www/html/froxlor
 bin/froxlor-cli froxlor:config-services -c
@@ -102,6 +102,6 @@ systemctl start apache2 proftpd postfix dovecot
 ```
 
 ### Finishing touches
-Almost done! Froxlor and all your customer's projects should work now. As a final step, you want to login into froxlor and head to System, Settings, System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with froxlor's automatic configuration.
+Almost done! Froxlor and all your customer's projects should work now. As a final step, you want to login into froxlor and head to System > Settings > System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with froxlor's automatic configuration.
 
 All that is left now is to change DNS settings and shut down the old server.
