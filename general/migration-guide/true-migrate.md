@@ -3,71 +3,71 @@
 </script>
 # Migration Guide
 
-## Migrate froxlor to a new server
+## Migrating froxlor to a new server
 
 ### Requirements
-We assume your new server is set up and running to a point at which we could install froxlor. It is not necessary that you use the same packages, or the same versions even, than you did on the old server.
+We assume that your new server is set up and running to a point where we can install froxlor. It is not necessary to use the same packages or even the same versions as on the old server.
 
 ::: warning
 This guide is for advanced users only. Only use it if you know what you are doing, if you are able and willing to debug scripts and read log files. It would also help if you have a vague understanding of shell scripting and SQL.
 :::
 
-In the process, you will have to transfer files between your servers. This could be achieved using `scp`, or you could mount your old server's file system into a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe one single method here in detail. Instead, we vaguely describe a "fail-safe" version with `tar`. If you feel confident with the use of `rsync`, we strongly suggest you go for that. It is important however that file ownerships and file permissions are carried over to the new server.
+You will need to transfer files between your servers. This could be done using `scp`, or you could mount the filesystem of your old server to a folder on your new server using `sshfs`. However, since there are endless possibilities and everyone has their own preferences, we will not describe any single method in detail here. Instead, we will describe a "fail-safe" version using `tar`. If you feel comfortable using `rsync`, we strongly recommend that you do so. However, it is important that file ownership and permissions are transferred to the new server.
 
-### Considerations beforehand
-This method gives you the flexibility to switch your services and versions around. For example, you could use MySQL on your old server and MariaDB on your new server. However, for everything to go as smoothly as possible, you should be aware of a few things.
+### Considerations up front
+This method gives you the flexibility to switch your services and versions. For example, you could use MySQL on your old server and MariaDB on your new server. However, in order for everything to go as smoothly as possible, you should be aware of a few things.
 
-See, when your customers create new databases, froxlor actually just keeps an index of which ones it created. The actual credentials are stored by the DBMS itself. This also is mostly the part where this guide becomes more involved than the [cloning method](clone.html) (that we would still recommend for most users). Because froxlor does not actually know the database user's password, it will not be able to recreate them on a new host.
+You see, when your customers create new databases, froxlor only keeps an index of which ones it has created. The actual credentials are stored by the DBMS itself. This is also the part where this guide gets more involved than the [cloning method](clone.html) (which we would still recommend for most users). Since froxlor does not actually know the passwords of the database users, it will not be able to recreate them on a new host.
 
-For most users, the main difference between MariaDB and MySQL will be that MySQL 8 deprecates the old `mysql_native_password` hashing algorithm for storing passwords, whereas MariaDB does not support MySQL's new `caching_sha2_password` (and sticks with the former instead).
+For most users, the main difference between MariaDB and MySQL will be that MySQL 8 deprecates the old `mysql_native_password` hashing algorithm for storing passwords, while MariaDB does not support MySQL's new `caching_sha2_password` (and instead sticks with the former).
 
-You should be aware of this. If you change from **MySQL 8 to MariaDB**, prepare to change passwords. If you change from **MariaDB to MySQL**, prepare to change passwords. If you stick with MySQL, check if you might have to change passwords. If you stick with MariaDB, no password changes are to be expected.
+You should be aware of this. If you are switching from **MySQL 8 to MariaDB**, be prepared to update passwords. If you are switching from **MariaDB to MySQL**, be prepared to update passwords. If you are staying with MySQL, check if you need to update passwords. If you are staying with MariaDB, no password changes are expected.
 
 ### (MySQL only) Step 0: Consult `/var/log/mysql/error.log`
-Currently (as of writing: 8.0.36) MySQL warns in its error log file about the usage of `mysql_native_password` if any user still uses this hashing method. Since Oracle plans to remove support for this method in a future version, you should update to the new hashing algorithm to avoid problems down the road.
+Currently (as of writing: 8.0.36) MySQL warns in its error log file about the use of `mysql_native_password` if a user still uses this hashing method. Since Oracle plans to drop support for this method in a future release, you should upgrade to the new hashing algorithm to avoid problems down the road.
 
-To do that, you would log in to your MySQL server
+To do this, you would log on to your MySQL server:
 ```shell
 mysql --user=root --password --database=mysql
 ```
-and query for users that use the old plugin:
+and query for users using the old plugin:
 ```sql
 SELECT User FROM user WHERE plugin = 'mysql_native_password' GROUP BY User;
 ```
 
-On a system that only runs froxlor and websites for the customers, there are not all that many users we care about. We can safely ignore:
-* root (which is re-created on the new server anyway)
-* froxroot (which is re-created on the new server anyway)
-* mysql.infoschema (we won't carry that over)
-* mysql.session (we won't carry that over)
-* mysql.sys (we won't carry that over)
-* debian-sys-maint (if exists - we won't carry that over)
+On a system that only runs froxlor and websites for customers, there are not too many users that we care about. We can safely ignore:
+* root (which will be recreated on the new server anyway)
+* froxroot (which will be recreated on the new server anyway)
+* mysql.infoschema (we won't carry that one over)
+* mysql.session (we won't carry that one over)
+* mysql.sys (we won't carry that one over)
+* debian-sys-maint (if it exists - we won't carry that one over)
 
-Where we would have to change passwords would be if **froxlor** or any customer database users use the old hashing algorithm. The password for the `froxlor` username is easy enough to get, it can be read from `/var/www/html/froxlor/lib/userdata.inc.php`. Your customers' passwords are a bit harder. Here you might want to grep your customers' files for the username (e.g. `johndoesql69`). Many applications using MySQL (e.g. WordPress) store the credentials next to each other, so these passwords should be fairly easy to find that way.
+Where we would need to update passwords is if **froxlor** or any customer database users are using the old hashing algorithm. The password for the `froxlor` username is easy enough to get, it can be found in `/var/www/html/froxlor/lib/userdata.inc.php`. Your customers' passwords are a bit trickier. You may want to grep your customers' files for the username (e.g. `johndoesql69`). Many applications that use MySQL (e.g. WordPress) store the credentials side-by-side, so these passwords should be fairly easy to find that way.
 
-You should create yourself a map in a text editor where you store all the users that you would have to change the passwords for.
+You should create a map in a text editor where you store all the users whose passwords you need to update.
 
 Login to MySQL with your root credentials:
 ```shell
 mysql --user=root --password
 ```
 
-And run this query for each user that needs a password update:
+And run this query for each user who needs a password update:
 
 ```sql
 ALTER USER 'username' IDENTIFIED BY 'password';
 ```
 
 ### Preparation
-Before you start, you should stop services that could create user data as this would not be part of our backup. Think of your web server, FTP daemon and mail server. For a basic installation using Apache, ProFTPd, Postfix, and Dovecot, this would be your line (you might want to adjust this for the services you are actually using):
+Before you start, you should stop any services that might create user data, as this will not be part of our backup. Think about your web server, FTP daemon, and mail server. For a basic installation with Apache, ProFTPd, Postfix and Dovecot, this would be your line (you may want to adjust this for the services you actually use):
 ```shell
 systemctl stop apache2 proftpd postfix dovecot
 ```
 
-This will (obviously) cause most of your server to go down, so prepare your customers beforehand. Please note that we did not shut down MySQL/MariaDB because we need to dump the databases.
+This will (obviously) cause most of your server to go down, so prepare your customers beforehand. Note that we did not shut down MySQL/MariaDB because we need to dump the databases.
 
-### Dump all your databases
-Dumping all your databases is fairly straightforward. You can use a script for that. Put it in a safe location, such as `~/froxlor-migration/` and name it `dump-em-all.sh`. Also, give it execution rights (`chmod +x ~/froxlor-migration/dump-em-all.sh`). It should have the following content (adjust MYSQL_PWD to your root password):
+### Dumping all your databases
+Dumping all your databases is quite simple. You can use a script to do this. Put it in a safe place like `~/froxlor-migration/` and name it `dump-em-all.sh`. Also give it execute permissions (`chmod +x ~/froxlor-migration/dump-em-all.sh`). It should look like this (change MYSQL_PWD to your root password):
 ```bash
 #!/bin/bash
 
@@ -78,7 +78,7 @@ export MYSQL_PWD=MySecretRootPasswordHere
 
 DBLIST=`mktemp`
 
-mysqlshow --user=root | awk '{print $2}' | grep -v 'Databases' | grep -v 'information_schema' | grep -v 'performance_schema'  > $DBLIST
+mysqlshow --user=root | awk '{print $2}' | grep -v 'Databases' | grep -v 'information_schema' | grep -v 'performance_schema' > $DBLIST
 
 for DB in `cat $DBLIST`; do
     if [ "$DB" == "sys" ]; then
@@ -95,17 +95,17 @@ echo "All done!"
 ```
 
 ### Transfer files
-Now it's time to transfer your data to the new server. That would be your SQL dumps (if you followed the example, it's in `~/froxlor-migration/`), your froxlor installation (by default in `/var/www/html/froxlor`) and your customers' data (by default in `/var/customers/`).
+Now it's time to transfer your data to the new server. That would be your SQL dumps (if you followed the example, it's in `~/froxlor-migration/`), your froxlor installation (by default in `/var/www/html/froxlor`) and your customer data (by default in `/var/customers/`).
 
 ### Pretend to install froxlor
-Make sure your new server has installed all the software that is required to run froxlor.
+Make sure that your new server has all the software installed that is needed to run froxlor.
 
-If you were using non-default packages, such as custom PHP versions or another database server, now would be the time to add the necessary repositories and install the packages accordingly.
+If you are using non-default packages, such as custom PHP versions or a different database server, now is the time to add the necessary repositories and install the packages accordingly.
 
-Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password that you also used on your old server.
+Consult the [installation guide](../installation/) to see the current system requirements and how to install froxlor. Follow your preferred installation guide up to the point where you create the privileged database user. Use the same username and password you used on your old server.
 
-### Prepare and import databases
-On the old server, we created a dump of all databases. Now it's time to create them anew. For that, head over to the folder that includes your *.sql dumps and create a new file, name it `create-db.sh` and give it execution permissions. Its contents should be (again change MYSQL_PWD's value to your MySQL root password):
+### Preparing and importing databases
+We created a dump of all the databases on the old server. Now it's time to recreate them. To do this, go to the folder with your *.sql dumps and create a new file, name it `create-db.sh` and give it execute permissions. It should look like this (again change MYSQL_PWD to your MySQL root password):
 ```bash
 #!/bin/bash
 
@@ -131,9 +131,9 @@ echo "All done!"
 
 ```
 
-After this script is done, the databases would be re-imported. All that is left now is the users. And this is the fun part, which is not to say, the part where you could use some SQL knowledge.
+After this script has finished, the databases will be imported again. All that is left is the users. And this is the fun part, which is not to say the part where you could use some SQL knowledge.
 
-Open mysql.sql in your favorite editor. Delete everything from the beginning until
+Open mysql.sql in your favorite editor. Delete everything from the top up to
 ```sql
 INSERT INTO `db` VALUES
 ```
@@ -143,11 +143,11 @@ After that statement, delete everything from the comment until you find
 INSERT INTO `user` VALUES
 ```
 (again, do not delete this line)
-And once again, after that statement, there should be a comment and from there until the end, you are deleting everything.
+And again, after that statement, there should be a comment, and from there to the end, you delete everything.
 
-Now you want to do a little search and replace magic for better readability. You want to find `),(` and replace it with `),\n(` (or however you would tell your editor that you want a line break after the comma). If you for example use `mcedit`, you could achieve this by searching for `\),\(` and replacing with `),\n(` in `Regular Expression` mode.
+Now you want to do some search and replace magic for better readability. You want to find `),(` and replace it with `),\n(` (or however you would tell your editor that you want a line break after the comma). For example, if you are using `mcedit`, you could achieve this by searching for `\),\(` and replacing it with `),\n(` in `Regular Expression` mode.
 
-You should see a bunch of lines now. These represent your databases' permissions and your database users. Navigate to lines that include either of those:
+You should now see a bunch of lines. These represent your databases' privileges and your database users. Navigate to the lines that contain either of these:
 * `performance_schema`
 * `mysql.sys`
 * `mysql.infoschema`
@@ -156,37 +156,37 @@ You should see a bunch of lines now. These represent your databases' permissions
 * `root`
 and delete them.
 
-Once the editor is open, you would do a little search and replace now for your old IP addresses and replace them with your new IP addresses.
+Once the editor is open, you would now do a little search and replace for your old IP addresses and replace them with your new IP addresses.
 
-When done, save the file and import it to your mysql:
+When done, save the file and import it into your mysql:
 ```shell
 mysql --user=root --database=mysql < mysql.sql
 ```
 
-~~For good measure~~ Because we did something a sane service would not really appreciate, you should restart MySQL now which would also make it reload all the user data:
+~~For good measure~~ Because we have done something that a sane service would not really appreciate, you should now restart MySQL, which will also cause it to reload all the user data:
 ```shell
 service mysql restart
 ```
 
-If MySQL seems happy enough, then congratulations, you did the hardest part. The rest should be easy.
+If MySQL seems happy enough, then congratulations, you have done the hard part. The rest should be easy.
 
 #### Have froxlor create its environment
-Earlier, we search-replace'd IP addresses, but that was for the database and quite frankly, we only did it because it was convenient at this point. But froxlor also has a list of IP addresses that most likely needs changing. Froxlor comes with a CLI tool to change the old ones with the new ones:
+Earlier, we search-replace'd IP addresses, but that was for the database and frankly, we only did it because it was convenient at the time. But froxlor also has a list of IP addresses that most likely need to be changed. Froxlor comes with a CLI tool to replace the old ones with the new ones:
 ```shell
 cd /var/www/html/froxlor
 bin/froxlor-cli froxlor:switch-server-ip --switch=123.10.20.30,234.30.20.10
 bin/froxlor-cli froxlor:switch-server-ip --switch=2001:db8:beef::69,2001:db8:cafe::420
 ```
 
-Now we have to have froxlor configure all the necessary services such as your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For that, we use froxlor's CLI tool as the web interface would likely not work yet.
+Now we have to let froxlor configure all the necessary services like your web server (e.g. Apache or nginx), the mail configuration, FTP and everything else. For this, we use froxlor's CLI tool, since the web interface would probably not work yet.
 ```shell
 cd /var/www/html/froxlor
 bin/froxlor-cli froxlor:config-services -c
 ```
 
-Froxlor CLI will now ask you about your distro and the services you want to use and create a configuration list. At the end of the process, it'll offer you to apply all the necessary changes to the config files which you want to accept.
+Froxlor CLI will now ask you about your Linux distribution and the services you want to use and create a configuration list. At the end of the process, it'll offer you to make any necessary changes to the configuration files that you want to accept.
 
 ### Finishing touches
-Almost done! Froxlor and all your customers' projects should work now. As a final step, you want to login into froxlor and head to System > Settings > System Settings. Here you may want to adjust the hostname. If so, this would also yield a re-configuration of the mail server but this is no big deal with froxlor's automatic configuration.
+Almost done! Froxlor and all your customer's projects should work now. As a last step you should login to froxlor and go to System -> Settings -> System Settings. Here you might want to adjust the hostname. If so, you will also have to reconfigure the mail server but this is no problem with froxlor's automatic configuration.
 
-All that is left now is to change DNS settings and shut down the old server.
+All that remains is to change the DNS settings and shut down the old server.
