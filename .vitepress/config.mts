@@ -169,6 +169,10 @@ function navbar21() {
                 text: 'Froxlor console scripts (CLI)',
                 link: '/admin-guide/cli-scripts/'
             },
+            {
+                text: 'Settings you might want',
+                link: '/admin-guide/settings-you-might-want/'
+            },
         ]
     },
         {
