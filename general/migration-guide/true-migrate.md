@@ -78,9 +78,13 @@ export MYSQL_PWD=MySecretRootPasswordHere
 
 DBLIST=`mktemp`
 
-mysqlshow --user=root | awk '{print $2}' | grep -v 'Databases' | grep -v 'information_schema' | grep -v 'performance_schema' | grep -v 'sys'  > $DBLIST
+mysqlshow --user=root | awk '{print $2}' | grep -v 'Databases' | grep -v 'information_schema' | grep -v 'performance_schema'  > $DBLIST
 
 for DB in `cat $DBLIST`; do
+    if [ "$DB" == "sys" ]; then
+        continue;
+    fi;
+
     echo "Dumping "$DB"..."
     mysqldump --user=root --opt --max_allowed_packet=1G --single-transaction --default-character-set=utf8mb4 $DB > $DB.sql;
 done;
