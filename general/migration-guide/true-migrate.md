@@ -115,7 +115,7 @@ for DBFile in `ls -1 *.sql`; do
         continue;
     fi;
 
-    DB=`echo $DBFile | tr -d '.sql'`
+    DB=${DBFile//".sql"/}
 
     echo "Importing "$DB" from "$DBFile"..."
 
